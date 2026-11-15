@@ -4,7 +4,7 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $matrix = Get-Content -LiteralPath (Join-Path $projectRoot 'versioning/versions.json') -Raw | ConvertFrom-Json
 if (-not $Minecraft) { $Minecraft = @($matrix.PSObject.Properties.Name) }
-$arguments = @('-Psmoke', '--console=plain', '-Dorg.gradle.internal.http.socketTimeout=30000', '-Dorg.gradle.internal.http.connectionTimeout=15000') + $GradleArgument
+$arguments = @('-Psmoke', '--console=plain', '-Dfabric.loom.ci=true', '-Dorg.gradle.internal.http.socketTimeout=30000', '-Dorg.gradle.internal.http.connectionTimeout=15000') + $GradleArgument
 if (-not $NoSystemProxy) {
     $uri = [Uri]'https://maven.fabricmc.net/'
     $proxy = [Net.WebRequest]::GetSystemWebProxy().GetProxy($uri)

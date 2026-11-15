@@ -13,7 +13,7 @@ foreach ($targetMc in $Minecraft) {
     if (-not $matrix.PSObject.Properties[$targetMc]) { throw "Unknown Minecraft target: $targetMc" }
 }
 
-$commonArguments = @('--console=plain', '-Dorg.gradle.internal.http.socketTimeout=30000', '-Dorg.gradle.internal.http.connectionTimeout=15000')
+$commonArguments = @('--console=plain', '-Dfabric.loom.ci=true', '-Dorg.gradle.internal.http.socketTimeout=30000', '-Dorg.gradle.internal.http.connectionTimeout=15000')
 $commonArguments += $GradleArgument
 if (-not $NoSystemProxy) {
     $repositoryUri = [Uri]'https://maven.fabricmc.net/'

@@ -183,12 +183,13 @@ Punchy 会隐藏原版的第一人称手臂，自己画手臂，再用**第三�
 可在本机 `gradle.properties` 设置 `org.gradle.java.home` 与 `org.gradle.java.installations.paths`；源码包会过滤这些机器路径。
 源码已包含 Gradle Wrapper、Mod Menu 编译接口和三种格式的原创测试样例。首次构建需联网下载 Gradle、Minecraft 与 Fabric 依赖。
 
-Windows PowerShell 示例（Linux / macOS 将 `./gradlew.bat` 换成 `./gradlew`）：
+PowerShell 7 示例（Linux / macOS 将 `./gradlew.bat` 换成 `./gradlew`）：
 
 ```powershell
 ./gradlew.bat build '-Pmc=1.20.1'
 ./gradlew.bat build '-Pmc=26.3' '-Porg.gradle.java.installations.paths=<JDK25路径>,<JDK21路径>'
 ./scripts/build-matrix.ps1                    # 全 24 版本构建、测试和 jar 元数据检查
+./scripts/smoke-matrix.ps1                    # 全 24 版本隔离客户端，遍历设置与预览
 ./gradlew.bat sourceRelease                  # 单个多版本源码 ZIP
 ./gradlew.bat runSmokeClient '-Psmoke' '-Pmc=1.20.1' # 真实客户端：载入样例、预览、截图后退出
 ./gradlew.bat runClientGameTest '-Pmc=1.21.11' '-PtestFile=src/test/resources/fixtures/original-house.litematic'
@@ -204,6 +205,9 @@ Windows PowerShell 示例（Linux / macOS 将 `./gradlew.bat` 换成 `./gradlew`
 源码发布包为 `build/versions/<默认版本>/distributions/schematic-totem-1.3.0-multiversion-src.zip`。
 包含共享源码、API 差异层、依赖锁、测试、构建脚本、文档、许可证及 Mod Menu 编译接口；不包含 Minecraft、个人模组、存档、缓存、反编译资料或本机 JDK/代理路径。
 采用稳定文件顺序和固定时间戳；`gradlew` 保留 Unix 可执行权限。
+
+完整矩阵验证后，可运行 `python scripts/package-release.py --game-test <1.21.11世界测试报告>` 汇总发布目录、校验和、日志与截图；检查缺失或哈希不匹配时会停止。
+`python scripts/create-version-branches.py` 从已提交的 `feature/multiversion` 创建尚不存在的版本分支，不覆盖已有分支。
 
 ## 许可
 

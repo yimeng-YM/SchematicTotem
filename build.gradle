@@ -134,6 +134,7 @@ tasks.register("sourceRelease", Zip) {
         include "src/**", "libs/modmenu/*.jar", "libs/modmenu/*.LICENSE.txt", "libs/README.md",
                 "gradle/wrapper/**", "gradlew", "gradlew.bat", "build.gradle", "settings.gradle",
                 "README.md", "CHANGELOG.md", "LICENSE", "versioning/*.gradle", "versioning/versions.json", "ports/**", "docs/**", "scripts/**"
+        exclude "**/__pycache__/**", "**/*.pyc"
         into root
     }
     // Ant's default excludes also hide Git metadata files requested explicitly.
