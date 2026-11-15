@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.yimeng.schematictotem.test.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "FrameTimerMixin",
+    "EmitTimerMixin",
+    "DrawTimerMixin",
+    "LateKeyBindingMixin",
+    "HandFrameProbeMixin",
+    "DrawnScaleProbeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

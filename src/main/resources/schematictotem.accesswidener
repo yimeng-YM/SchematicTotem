@@ -1,0 +1,8 @@
+accessWidener v2 named
+
+# Our own render layers: vanilla's entity_cutout / item_entity_translucent_cull pipelines on the block atlas,
+# but with a mipmapped sampler so a whole build squeezed into one item does not shimmer.
+accessible method net/minecraft/client/render/RenderLayer of (Ljava/lang/String;Lnet/minecraft/client/render/RenderSetup;)Lnet/minecraft/client/render/RenderLayer;
+
+# The config screen's 3D preview is a picture-in-picture GUI element (like the player model in the inventory).
+accessible field net/minecraft/client/gui/DrawContext state Lnet/minecraft/client/gui/render/state/GuiRenderState;

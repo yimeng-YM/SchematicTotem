@@ -1,0 +1,138 @@
+plugins {
+    id 'fabric-loom' version '1.17.13'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // Mod Menu is optional at runtime; its API is only needed to compile the config-button entrypoint.
+    modCompileOnly files("libs/modmenu-17.0.0.jar")
+
+    testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+}
+
+// -PwithMods=<jar>[;<jar>...]: other mods in the dev client / client game test, e.g. Punchy for the first-person checks.
+// They are copied to ASCII names first: Loom does not pick up jars named like 【第一人称动画】punchy.jar.
+def extraMods = (project.findProperty("withMods") ?: "").toString().split(";").findAll { !it.isBlank() }
+if (!extraMods.isEmpty()) {
+    def extraDir = layout.buildDirectory.dir("extra-mods").get().asFile
+    extraDir.mkdirs()
+    def copies = extraMods.collect { path ->
+        def source = file(path.trim())
+        def target = new File(extraDir, source.name.replaceAll("[^A-Za-z0-9._+-]", ""))
+        java.nio.file.Files.copy(source.toPath(), target.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+        target
+    }
+    dependencies {
+        modLocalRuntime files(copies)
+    }
+}
+
+// Offline checks against real schematic files (no game window): -Pschematics=<dir> overrides the folder.
+test {
+    useJUnitPlatform()
+    maxHeapSize = "4G"
+    systemProperty "schematictotem.testDir", project.findProperty("schematics")
+            ?: file("test-schematics").absolutePath
+    systemProperty "schematictotem.reportDir", layout.buildDirectory.dir("reports/schematictotem").get().asFile.absolutePath
+    systemProperty "schematictotem.debugReader", project.findProperty("debugReader") ?: "false"
+    testLogging {
+        showStandardStreams = true
+        exceptionFormat = "full"
+    }
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/schematictotem.accesswidener")
+    // gradlew runClientGameTest [-Psweep=true] [-Pfront=east] [-PtestFile=<schematic>] [-PwithMods=<jar>]
+    runs.matching { it.name == "clientGameTest" }.configureEach {
+        vmArg "-Dschematictotem.test.sweep=" + (project.findProperty("sweep") ?: "false")
+        vmArg "-Dschematictotem.test.front=" + (project.findProperty("front") ?: "")
+        if (project.findProperty("testFile")) vmArg "-Dschematictotem.test.file=" + file(project.findProperty("testFile")).absolutePath
+        if (project.findProperty("bigTestFile")) vmArg "-Dschematictotem.test.big=" + file(project.findProperty("bigTestFile")).absolutePath
+        // -PmodPoses="rx,ry,rz,tx,ty,tz,scale;...": screenshots of first-person poses for mods like Punchy
+        if (project.findProperty("modPoses")) {
+            vmArg "-Dschematictotem.test.modSweep=true"
+            vmArg "-Dschematictotem.test.modPoses=" + project.findProperty("modPoses")
+        }
+        programArgs "--width", "1280", "--height", "720"
+    }
+}
+
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "schematictotem-test"
+        enableGameTests = false
+        enableClientGameTests = true
+        eula = true
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+    it.options.encoding = 'UTF-8'
+    it.options.compilerArgs << "-Xlint:deprecation"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.base.archivesName.get()}" }
+    }
+}
+
+// gradlew sourceRelease -> build/distributions/schematic-totem-<version>-src.zip, a source tree that builds on its own.
+// Listed file by file, so research/ (decompiled game and third-party code), run/, logs and build output never get in;
+// gradle.properties loses this machine's org.gradle.java.home.
+tasks.register("sourceRelease", Zip) {
+    group = "distribution"
+    description = "Packs the buildable source tree into build/distributions."
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+    def root = "${project.archives_base_name}-${project.version}-src"
+    archiveFileName = "${root}.zip"
+    destinationDirectory = layout.buildDirectory.dir("distributions")
+    from(projectDir) {
+        include "src/**", "libs/modmenu-17.0.0.jar", "libs/README.md", "libs/LICENSE-ModMenu.txt",
+                "gradle/wrapper/**", "gradlew", "gradlew.bat", "build.gradle", "settings.gradle",
+                "README.md", "CHANGELOG.md", "LICENSE"
+        into root
+    }
+    // Gradle excludes .gitignore from source trees, so read it as text and name it in the archive.
+    from(resources.text.fromString(file(".gitignore").getText("UTF-8")).asFile()) {
+        rename { ".gitignore" }
+        into root
+    }
+    from(projectDir) {
+        include "gradle.properties"
+        filteringCharset = "UTF-8"
+        filter { String line -> line.trim().startsWith("org.gradle.java.home") ? null : line }
+        filter(org.apache.tools.ant.filters.FixCrLfFilter,
+                eol: org.apache.tools.ant.filters.FixCrLfFilter.CrLf.newInstance("lf"))
+        into root
+    }
+    // gradlew keeps its executable bit for unzip on Linux / macOS
+    filesMatching("**/gradlew") { permissions { unix("rwxr-xr-x") } }
+}

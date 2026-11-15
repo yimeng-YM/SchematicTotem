@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "schematictotem",
+  "version": "${version}",
+  "name": "Schematic Totem",
+  "description": "Replaces the Totem of Undying model with a miniature of any Litematica (.litematic), Sponge (.schem) or structure (.nbt) file. Client-side only.\n用投影文件（.litematic / .schem / .nbt）生成的微缩模型替换不死图腾的模型，纯客户端。",
+  "authors": ["yimeng-YM"],
+  "license": "MIT",
+  "icon": "assets/schematictotem/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.yimeng.schematictotem.SchematicTotemClient"],
+    "modmenu": ["dev.yimeng.schematictotem.compat.ModMenuIntegration"]
+  },
+  "mixins": ["schematictotem.mixins.json"],
+  "accessWidener": "schematictotem.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  }
+}

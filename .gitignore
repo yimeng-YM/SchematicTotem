@@ -1,0 +1,14 @@
+.gradle/
+build/
+run/
+out/
+logs/
+mods/
+dist/
+*.iml
+.idea/
+*.log
+# decompiled game / third-party sources and local research material: never publish
+research/
+# Local schematic fixtures are supplied by the developer, not shipped with source releases.
+test-schematics/
