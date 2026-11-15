@@ -105,5 +105,6 @@
   "schematictotem.screen.detail_full": "精细度：完全还原（1:1，不缩放）",
   "schematictotem.info.detail_full": "完全还原（1:1，不缩放）",
   "schematictotem.full_capped": "这个投影太大，无法 1:1 完全还原（超过 100 万面或 1 亿格的安全上限），已改用能放下的最高精度 1:%s",
-  "schematictotem.full_heavy": "完全还原：最高精度有 %s 面，拿在手上时可能会掉帧"
+  "schematictotem.full_heavy": "完全还原：最高精度有 %s 面，拿在手上时可能会掉帧",
+  "key.categories.schematictotem": "投影图腾"
 }

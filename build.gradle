@@ -1,8 +1,16 @@
 plugins {
-    id 'fabric-loom' version '1.17.13'
+    id 'net.fabricmc.fabric-loom-remap' version '1.17.13' apply false
+    id 'net.fabricmc.fabric-loom' version '1.17.13' apply false
 }
 
-version = project.mod_version
+def versionMatrix = new groovy.json.JsonSlurper().parse(file("versioning/versions.json"))
+ext.targetMinecraft = (findProperty("mc") ?: project.minecraft_version).toString()
+if (!versionMatrix.containsKey(targetMinecraft)) throw new GradleException("Unsupported Minecraft target: ${targetMinecraft}; choose ${versionMatrix.keySet()}")
+ext.targetConfig = versionMatrix[targetMinecraft]
+ext.unobfuscated = targetMinecraft.startsWith("26.")
+apply plugin: unobfuscated ? 'net.fabricmc.fabric-loom' : 'net.fabricmc.fabric-loom-remap'
+layout.buildDirectory = file("build/versions/${targetMinecraft}")
+version = "${project.mod_version}+mc${targetMinecraft}"
 group = project.maven_group
 
 base {
@@ -10,15 +18,17 @@ base {
 }
 
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    minecraft "com.mojang:minecraft:${targetMinecraft}"
+    if (!unobfuscated) mappings "net.fabricmc:yarn:${targetConfig.yarn}:v2"
+    add(unobfuscated ? "implementation" : "modImplementation", "net.fabricmc:fabric-loader:${targetConfig.loader}")
+    add(unobfuscated ? "implementation" : "modImplementation", "net.fabricmc.fabric-api:fabric-api:${targetConfig.fabric_api}")
 
     // Mod Menu is optional at runtime; its API is only needed to compile the config-button entrypoint.
-    modCompileOnly files("libs/modmenu-17.0.0.jar")
+    add(unobfuscated ? "compileOnly" : "modCompileOnly", files(targetConfig.modmenu.file))
 
-    testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+    compileOnly "org.jspecify:jspecify:1.0.0"
+    testCompileOnly "org.jspecify:jspecify:1.0.0"
+    testImplementation "net.fabricmc:fabric-loader-junit:${targetConfig.loader}"
 }
 
 // -PwithMods=<jar>[;<jar>...]: other mods in the dev client / client game test, e.g. Punchy for the first-person checks.
@@ -34,7 +44,7 @@ if (!extraMods.isEmpty()) {
         target
     }
     dependencies {
-        modLocalRuntime files(copies)
+        add(unobfuscated ? "runtimeOnly" : "modLocalRuntime", files(copies))
     }
 }
 
@@ -43,7 +53,7 @@ test {
     useJUnitPlatform()
     maxHeapSize = "4G"
     systemProperty "schematictotem.testDir", project.findProperty("schematics")
-            ?: file("test-schematics").absolutePath
+            ?: file("src/test/resources/fixtures").absolutePath
     systemProperty "schematictotem.reportDir", layout.buildDirectory.dir("reports/schematictotem").get().asFile.absolutePath
     systemProperty "schematictotem.debugReader", project.findProperty("debugReader") ?: "false"
     testLogging {
@@ -52,8 +62,12 @@ test {
     }
 }
 
+apply from: "versioning/prepare.gradle"
+
+if (project.hasProperty("smoke")) apply from: "versioning/smoke.gradle"
+
 loom {
-    accessWidenerPath = file("src/main/resources/schematictotem.accesswidener")
+    if (targetMinecraft == "1.21.11") accessWidenerPath = file("src/main/resources/schematictotem.accesswidener")
     // gradlew runClientGameTest [-Psweep=true] [-Pfront=east] [-PtestFile=<schematic>] [-PwithMods=<jar>]
     runs.matching { it.name == "clientGameTest" }.configureEach {
         vmArg "-Dschematictotem.test.sweep=" + (project.findProperty("sweep") ?: "false")
@@ -69,7 +83,7 @@ loom {
     }
 }
 
-fabricApi {
+if (targetMinecraft == "1.21.11") fabricApi {
     configureTests {
         createSourceSet = true
         modId = "schematictotem-test"
@@ -82,19 +96,21 @@ fabricApi {
 processResources {
     inputs.property "version", project.version
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        expand "version": project.version, "minecraft": targetMinecraft, "java": targetConfig.java,
+                "loader": targetConfig.loader, "fabricApi": targetConfig.fabric_api
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    it.options.release = targetConfig.java as int
     it.options.encoding = 'UTF-8'
     it.options.compilerArgs << "-Xlint:deprecation"
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.toVersion(targetConfig.java)
+    targetCompatibility = JavaVersion.toVersion(targetConfig.java)
+    toolchain.languageVersion = JavaLanguageVersion.of(unobfuscated ? 25 : 21)
 }
 
 jar {
@@ -111,24 +127,29 @@ tasks.register("sourceRelease", Zip) {
     description = "Packs the buildable source tree into build/distributions."
     preserveFileTimestamps = false
     reproducibleFileOrder = true
-    def root = "${project.archives_base_name}-${project.version}-src"
+    def root = "${project.archives_base_name}-${project.mod_version}-multiversion-src"
     archiveFileName = "${root}.zip"
     destinationDirectory = layout.buildDirectory.dir("distributions")
     from(projectDir) {
-        include "src/**", "libs/modmenu-17.0.0.jar", "libs/README.md", "libs/LICENSE-ModMenu.txt",
+        include "src/**", "libs/modmenu/*.jar", "libs/modmenu/*.LICENSE.txt", "libs/README.md",
                 "gradle/wrapper/**", "gradlew", "gradlew.bat", "build.gradle", "settings.gradle",
-                "README.md", "CHANGELOG.md", "LICENSE"
+                "README.md", "CHANGELOG.md", "LICENSE", "versioning/*.gradle", "versioning/versions.json", "ports/**", "docs/**", "scripts/**"
         into root
     }
-    // Gradle excludes .gitignore from source trees, so read it as text and name it in the archive.
-    from(resources.text.fromString(file(".gitignore").getText("UTF-8")).asFile()) {
-        rename { ".gitignore" }
-        into root
+    // Ant's default excludes also hide Git metadata files requested explicitly.
+    [".gitignore", ".gitattributes"].each { name ->
+        from(resources.text.fromString(file(name).getText("UTF-8")).asFile()) {
+            rename { name }
+            into root
+        }
     }
     from(projectDir) {
         include "gradle.properties"
         filteringCharset = "UTF-8"
-        filter { String line -> line.trim().startsWith("org.gradle.java.home") ? null : line }
+        filter { String line ->
+            def trimmed = line.trim()
+            trimmed.isEmpty() || trimmed.startsWith('#') || trimmed ==~ /(?:org.gradle.jvmargs|org.gradle.parallel|minecraft_version|mod_version|maven_group|archives_base_name)=.*/ ? line : null
+        }
         filter(org.apache.tools.ant.filters.FixCrLfFilter,
                 eol: org.apache.tools.ant.filters.FixCrLfFilter.CrLf.newInstance("lf"))
         into root

@@ -1,0 +1,314 @@
+{
+  "1.20": {
+    "minecraft": "1.20",
+    "java": 17,
+    "loader": "0.19.5",
+    "fabric_api": "0.83.0+1.20",
+    "yarn": "1.20+build.1",
+    "modmenu": {
+      "version": "7.0.1",
+      "file": "libs/modmenu/modmenu-7.0.1.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/RTFDnTKf/modmenu-7.0.1.jar",
+      "sha512": "4573f699d177b28a05a5f3f208b264bf985d73042c796c9a08ad4123b78a5d4af7421ce939d0dfb21fee468000b4a6a8968094d44dac4146773b693447bfd055"
+    }
+  },
+  "1.20.1": {
+    "minecraft": "1.20.1",
+    "java": 17,
+    "loader": "0.19.5",
+    "fabric_api": "0.92.12+1.20.1",
+    "yarn": "1.20.1+build.10",
+    "modmenu": {
+      "version": "7.2.2",
+      "file": "libs/modmenu/modmenu-7.2.2.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/lEkperf6/modmenu-7.2.2.jar",
+      "sha512": "9a7837e04bb34376611b207a3b20e5fe1c82a4822b42929d5b410809ec4b88ff3cac8821c4568f880775bafa3c079dfc7800f8471356a4046248b12607e855eb"
+    }
+  },
+  "1.20.2": {
+    "minecraft": "1.20.2",
+    "java": 17,
+    "loader": "0.19.5",
+    "fabric_api": "0.91.6+1.20.2",
+    "yarn": "1.20.2+build.4",
+    "modmenu": {
+      "version": "8.0.1",
+      "file": "libs/modmenu/modmenu-8.0.1.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/fCQyI9Zj/modmenu-8.0.1.jar",
+      "sha512": "b2827f7bf82f2791812c1a1ebdac4a0d62451e040e08eedb6b5dbfc9f3e78711286fc82676f29fec7600fc7058ebd40a627267fc59763b7b21586da582dd8171"
+    }
+  },
+  "1.20.3": {
+    "minecraft": "1.20.3",
+    "java": 17,
+    "loader": "0.19.5",
+    "fabric_api": "0.91.1+1.20.3",
+    "yarn": "1.20.3+build.1",
+    "modmenu": {
+      "version": "9.0.0",
+      "file": "libs/modmenu/modmenu-9.0.0.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/sjtVVlsA/modmenu-9.0.0.jar",
+      "sha512": "62ae3152d6dfd2745b95a6572f085bf8deb708d183a4234e6f72ae7b07f05a787454d4f289cee96d4e0f7efab026ed6073659d1aebb87530abeb7ddcfc0fe40b"
+    }
+  },
+  "1.20.4": {
+    "minecraft": "1.20.4",
+    "java": 17,
+    "loader": "0.19.5",
+    "fabric_api": "0.97.3+1.20.4",
+    "yarn": "1.20.4+build.3",
+    "modmenu": {
+      "version": "9.2.0",
+      "file": "libs/modmenu/modmenu-9.2.0.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/FawTQg29/modmenu-9.2.0.jar",
+      "sha512": "30e8075a4228ee11eb8b0e85d950a69c8d2df57e05b0da5268e6b0129eea5e69ac30e6eb1b4c93348bb8acfdc53c22b2866288d76f7446b51b79355f4eada87a"
+    }
+  },
+  "1.20.5": {
+    "minecraft": "1.20.5",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.97.8+1.20.5",
+    "yarn": "1.20.5+build.1",
+    "modmenu": {
+      "version": "10.0.0",
+      "file": "libs/modmenu/modmenu-10.0.0.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/HLa8flfl/modmenu-10.0.0.jar",
+      "sha512": "b18c56321c0dfd404607bd895ef3aa654d390cfb7b96cbf449ecaad4be4fce72d4b20e56bd4b914d9c162dfa9384f55ec238e855b4a1525b12bad3359c8d0534"
+    }
+  },
+  "1.20.6": {
+    "minecraft": "1.20.6",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.100.8+1.20.6",
+    "yarn": "1.20.6+build.3",
+    "modmenu": {
+      "version": "10.0.0",
+      "file": "libs/modmenu/modmenu-10.0.0.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/HLa8flfl/modmenu-10.0.0.jar",
+      "sha512": "b18c56321c0dfd404607bd895ef3aa654d390cfb7b96cbf449ecaad4be4fce72d4b20e56bd4b914d9c162dfa9384f55ec238e855b4a1525b12bad3359c8d0534"
+    }
+  },
+  "1.21": {
+    "minecraft": "1.21",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.102.0+1.21",
+    "yarn": "1.21+build.9",
+    "modmenu": {
+      "version": "11.0.5",
+      "file": "libs/modmenu/modmenu-11.0.5.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/6lgOkclV/modmenu-11.0.5.jar",
+      "sha512": "92e8e96267ff18d320903090f2ad9b32408a218919f5a0d578e232ad774c89d49a34a8271806652be7d6283f24e98432bc4af7f95855e78b843f9100d68696c7"
+    }
+  },
+  "1.21.1": {
+    "minecraft": "1.21.1",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.116.18+1.21.1",
+    "yarn": "1.21.1+build.3",
+    "modmenu": {
+      "version": "11.0.5",
+      "file": "libs/modmenu/modmenu-11.0.5.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/6lgOkclV/modmenu-11.0.5.jar",
+      "sha512": "92e8e96267ff18d320903090f2ad9b32408a218919f5a0d578e232ad774c89d49a34a8271806652be7d6283f24e98432bc4af7f95855e78b843f9100d68696c7"
+    }
+  },
+  "1.21.2": {
+    "minecraft": "1.21.2",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.106.1+1.21.2",
+    "yarn": "1.21.2+build.1",
+    "modmenu": {
+      "version": "12.0.1",
+      "file": "libs/modmenu/modmenu-12.0.1.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/fzwJOLlA/modmenu-12.0.1.jar",
+      "sha512": "25a8e1a190e8d69c376f43622fae18d1ff1f8e93547d1b19fb4f3b08bbc635c344308d789d260f2904d33daacf9172c6b1d8466887bfebe83ed92c6b6dff92af"
+    }
+  },
+  "1.21.3": {
+    "minecraft": "1.21.3",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.114.1+1.21.3",
+    "yarn": "1.21.3+build.2",
+    "modmenu": {
+      "version": "12.0.1",
+      "file": "libs/modmenu/modmenu-12.0.1.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/fzwJOLlA/modmenu-12.0.1.jar",
+      "sha512": "25a8e1a190e8d69c376f43622fae18d1ff1f8e93547d1b19fb4f3b08bbc635c344308d789d260f2904d33daacf9172c6b1d8466887bfebe83ed92c6b6dff92af"
+    }
+  },
+  "1.21.4": {
+    "minecraft": "1.21.4",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.119.4+1.21.4",
+    "yarn": "1.21.4+build.8",
+    "modmenu": {
+      "version": "13.0.4",
+      "file": "libs/modmenu/modmenu-13.0.4.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/qEKKsTqd/modmenu-13.0.4.jar",
+      "sha512": "863f7c367898e0fce283b11554d253f05acadf46057ab0d2c14a592582ce35bbd9cf4f4b8cf1e3658a6f7a4bb765f9e49a8a02127edbe017daeea8fb24b0ab4f"
+    }
+  },
+  "1.21.5": {
+    "minecraft": "1.21.5",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.128.2+1.21.5",
+    "yarn": "1.21.5+build.1",
+    "modmenu": {
+      "version": "14.0.2",
+      "file": "libs/modmenu/modmenu-14.0.2.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/2ZvBR7XI/modmenu-14.0.2.jar",
+      "sha512": "9dc0b7313325641c31f94ad89a8edf7dda6fb0a366271f03734d26c8245a98a788a6f0fe44c51793244abb75e84b8b0ae3320b6a799de6b98c089eb4ac65d4d8"
+    }
+  },
+  "1.21.6": {
+    "minecraft": "1.21.6",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.128.2+1.21.6",
+    "yarn": "1.21.6+build.1",
+    "modmenu": {
+      "version": "15.0.2",
+      "file": "libs/modmenu/modmenu-15.0.2.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/ku5NivOP/modmenu-15.0.2.jar",
+      "sha512": "e1c81227d64715ba0755a5752730983fa18cd2ee4b2b41a60545ecdf8b0845c977316e781d581e33eb86992b816a6b1fe92a2345edf72c161287a4fa3d40fec2"
+    }
+  },
+  "1.21.7": {
+    "minecraft": "1.21.7",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.129.0+1.21.7",
+    "yarn": "1.21.7+build.8",
+    "modmenu": {
+      "version": "15.0.2",
+      "file": "libs/modmenu/modmenu-15.0.2.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/ku5NivOP/modmenu-15.0.2.jar",
+      "sha512": "e1c81227d64715ba0755a5752730983fa18cd2ee4b2b41a60545ecdf8b0845c977316e781d581e33eb86992b816a6b1fe92a2345edf72c161287a4fa3d40fec2"
+    }
+  },
+  "1.21.8": {
+    "minecraft": "1.21.8",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.136.1+1.21.8",
+    "yarn": "1.21.8+build.1",
+    "modmenu": {
+      "version": "15.0.2",
+      "file": "libs/modmenu/modmenu-15.0.2.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/ku5NivOP/modmenu-15.0.2.jar",
+      "sha512": "e1c81227d64715ba0755a5752730983fa18cd2ee4b2b41a60545ecdf8b0845c977316e781d581e33eb86992b816a6b1fe92a2345edf72c161287a4fa3d40fec2"
+    }
+  },
+  "1.21.9": {
+    "minecraft": "1.21.9",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.134.1+1.21.9",
+    "yarn": "1.21.9+build.1",
+    "modmenu": {
+      "version": "16.0.1",
+      "file": "libs/modmenu/modmenu-16.0.1.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/pYbFlVtR/modmenu-16.0.1.jar",
+      "sha512": "be01bb5a80a39fc51223ef142713ba3cbc2c23658f0c8bd36ceed7ecd163684b7dc808f2ef23dce7fb350bdfd010de9787f2177e115cae3ea91b96a83bd6ea16"
+    }
+  },
+  "1.21.10": {
+    "minecraft": "1.21.10",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.138.4+1.21.10",
+    "yarn": "1.21.10+build.3",
+    "modmenu": {
+      "version": "16.0.1",
+      "file": "libs/modmenu/modmenu-16.0.1.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/pYbFlVtR/modmenu-16.0.1.jar",
+      "sha512": "be01bb5a80a39fc51223ef142713ba3cbc2c23658f0c8bd36ceed7ecd163684b7dc808f2ef23dce7fb350bdfd010de9787f2177e115cae3ea91b96a83bd6ea16"
+    }
+  },
+  "1.21.11": {
+    "minecraft": "1.21.11",
+    "java": 21,
+    "loader": "0.19.5",
+    "fabric_api": "0.141.6+1.21.11",
+    "yarn": "1.21.11+build.6",
+    "modmenu": {
+      "version": "17.0.1",
+      "file": "libs/modmenu/modmenu-17.0.1.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/cLkYaVuL/modmenu-17.0.1.jar",
+      "sha512": "cb68cc39c8da66d05a1d2054a0e7b62144881e0cdb5fd681bc4f337b1313fafac394246f4e0aa0c4b6343db9e9750250a00c1bb72689b762da685ce1ccfee51f"
+    }
+  },
+  "26.1": {
+    "minecraft": "26.1",
+    "java": 25,
+    "loader": "0.19.5",
+    "fabric_api": "0.145.1+26.1",
+    "yarn": null,
+    "modmenu": {
+      "version": "18.0.2",
+      "file": "libs/modmenu/modmenu-18.0.2.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/ZJ6YTrMY/modmenu-18.0.2.jar",
+      "sha512": "37393e1d4a23a548463e92eb0687af69034ee7c308bd1d2d27d78df0292f124c4463f19d4b53128b59cda4e02d01d7ae09f06456d10abde19b6e450163e50e97"
+    }
+  },
+  "26.1.1": {
+    "minecraft": "26.1.1",
+    "java": 25,
+    "loader": "0.19.5",
+    "fabric_api": "0.145.4+26.1.1",
+    "yarn": null,
+    "modmenu": {
+      "version": "18.0.2",
+      "file": "libs/modmenu/modmenu-18.0.2.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/ZJ6YTrMY/modmenu-18.0.2.jar",
+      "sha512": "37393e1d4a23a548463e92eb0687af69034ee7c308bd1d2d27d78df0292f124c4463f19d4b53128b59cda4e02d01d7ae09f06456d10abde19b6e450163e50e97"
+    }
+  },
+  "26.1.2": {
+    "minecraft": "26.1.2",
+    "java": 25,
+    "loader": "0.19.5",
+    "fabric_api": "0.155.3+26.1.2",
+    "yarn": null,
+    "modmenu": {
+      "version": "18.0.2",
+      "file": "libs/modmenu/modmenu-18.0.2.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/ZJ6YTrMY/modmenu-18.0.2.jar",
+      "sha512": "37393e1d4a23a548463e92eb0687af69034ee7c308bd1d2d27d78df0292f124c4463f19d4b53128b59cda4e02d01d7ae09f06456d10abde19b6e450163e50e97"
+    }
+  },
+  "26.2": {
+    "minecraft": "26.2",
+    "java": 25,
+    "loader": "0.19.5",
+    "fabric_api": "0.161.0+26.2",
+    "yarn": null,
+    "modmenu": {
+      "version": "20.0.3",
+      "file": "libs/modmenu/modmenu-20.0.3.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/iRo7AZXf/modmenu-20.0.3.jar",
+      "sha512": "c8224aa7a460d0c56ccb9978a112e4ad0d3eb17e2796e0c468a2392d220749f4f602838a11b3666145462c26078a879ab8a2fc177aa440f58e189c92a0088d6e"
+    }
+  },
+  "26.3": {
+    "minecraft": "26.3",
+    "java": 25,
+    "loader": "0.19.5",
+    "fabric_api": "0.166.2+26.3",
+    "yarn": null,
+    "modmenu": {
+      "version": "21.0.1",
+      "file": "libs/modmenu/modmenu-21.0.1.jar",
+      "url": "https://cdn.modrinth.com/data/mOgUt4GM/versions/xckkBHD5/modmenu-21.0.1.jar",
+      "sha512": "d00d52d5342728da13a6237f76c50fc5fd1c62d8112ae4e07726bbc64d2019a76130d6b2968765df81c6499225588eacee6681eebc13c0ada3cad91fc8ab2984"
+    }
+  }
+}

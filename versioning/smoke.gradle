@@ -1,0 +1,43 @@
+// Opt-in real-client smoke mod. Never included in production jars.
+def generatedSmoke = layout.buildDirectory.dir("generated/sources/target/smoke")
+sourceSets {
+    smoke {
+        java.setSrcDirs([generatedSmoke])
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+configurations.smokeImplementation.extendsFrom(configurations.implementation)
+configurations.smokeRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+configurations.smokeCompileOnly.extendsFrom(configurations.compileOnly)
+tasks.register("prepareSmokeSources") {
+    inputs.dir("src/smoke/java")
+    inputs.file("versioning/transform.gradle")
+    inputs.property("minecraft", targetMinecraft)
+    outputs.dir(generatedSmoke)
+    doLast {
+        fileTree("src/smoke/java").matching { include "**/*.java" }.each { source ->
+            def relative = file("src/smoke/java").toPath().relativize(source.toPath()).toString()
+            def target = new File(generatedSmoke.get().asFile, relative)
+            target.parentFile.mkdirs()
+            target.setText(project.ext.transformVersionSource(relative.replace('\\', '/'), source.getText("UTF-8")), "UTF-8")
+        }
+    }
+}
+tasks.named("compileSmokeJava") { dependsOn("prepareSmokeSources") }
+loom {
+    mods {
+        schematictotem { sourceSet sourceSets.main }
+        schematictotemSmoke { sourceSet sourceSets.smoke }
+    }
+    runs {
+        smokeClient {
+            client()
+            source sourceSets.smoke
+            runDir "run/compat/${targetMinecraft}"
+            vmArg "-Dschematictotem.smoke.fixture=" + file("src/test/resources/fixtures/original-house.litematic").absolutePath
+            vmArg "-Dschematictotem.smoke.version=${targetMinecraft}"
+            programArgs "--width", "1000", "--height", "700"
+        }
+    }
+}

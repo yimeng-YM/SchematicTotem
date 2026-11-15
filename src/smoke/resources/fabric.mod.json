@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "id": "schematictotem-smoke",
+  "version": "1.0.0",
+  "environment": "client",
+  "entrypoints": { "client": ["dev.yimeng.schematictotem.test.CompatibilitySmoke"] },
+  "depends": { "schematictotem": "*" }
+}

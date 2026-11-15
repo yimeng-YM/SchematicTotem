@@ -105,5 +105,6 @@
   "schematictotem.screen.detail_full": "Detail: exact (1:1, no scaling)",
   "schematictotem.info.detail_full": "exact (1:1, no scaling)",
   "schematictotem.full_capped": "This schematic is too big to show 1:1 (over the safety limit of 1M quads or 100M cells); using the finest that fits, 1:%s",
-  "schematictotem.full_heavy": "Exact detail: %s quads at the finest level; holding it may cost frames"
+  "schematictotem.full_heavy": "Exact detail: %s quads at the finest level; holding it may cost frames",
+  "key.categories.schematictotem": "Schematic Totem"
 }

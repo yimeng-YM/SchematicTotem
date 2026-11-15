@@ -15,10 +15,10 @@
   "mixins": ["schematictotem.mixins.json"],
   "accessWidener": "schematictotem.accesswidener",
   "depends": {
-    "fabricloader": ">=0.16.0",
-    "minecraft": "~1.21.11",
-    "java": ">=21",
-    "fabric-api": "*"
+    "fabricloader": ">=${loader}",
+    "minecraft": "=${minecraft}",
+    "java": ">=${java}",
+    "fabric-api": ">=${fabricApi}"
   },
   "suggests": {
     "modmenu": "*"

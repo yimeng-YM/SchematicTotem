@@ -1,10 +1,14 @@
-# 投影图腾 Schematic Totem（Fabric 1.21.11）
+# 投影图腾 Schematic Totem（Fabric 多版本）
 
 把**不死图腾**的模型换成任意投影文件的**微缩模型**：Litematica 的 `.litematic`，也支持 Sponge `.schem` 和原版结构 `.nbt`。
 纯客户端：单人和服务器都能用，服务器不用装。其他玩家看到的仍是原版图腾，除非他们也装了这个模组并加载了同一个文件。
 
-成品：`build/libs/schematic-totem-1.2.1+mc1.21.11.jar`
-依赖：Minecraft 1.21.11、Fabric Loader ≥ 0.16、Fabric API；可选 Mod Menu（提供“配置”按钮）。可与 Sodium、Iris 光影、ImmediatelyFast 同时使用；适配 Punchy 等自己画第一人称手臂的模组（见下文）。
+1.3.0 为 Minecraft **1.20 至 26.3 的 24 个正式版**分别构建独立 jar。请安装文件名中与你游戏版本完全一致的一个文件。
+成品位于 `dist/1.3.0/`，构建输出位于 `build/versions/<MC版本>/libs/`。
+依赖：Fabric Loader ≥ 0.19.5、该游戏版本的 Fabric API；可选 Mod Menu（提供“配置”按钮）。
+Java：1.20–1.20.4 需要 Java 17 或更新；1.20.5–1.21.11 需要 Java 21 或更新；26.x 需要 Java 25 或更新。
+
+版本、分支和验证范围见 [多版本说明](docs/多版本说明.md)。下文的历史性能数据与 Punchy、Sodium、Iris、ImmediatelyFast 联用记录来自原 1.21.11 版，其他版本的第三方模组组合仍需分别验证。
 
 ## 快速上手
 
@@ -175,42 +179,42 @@ Punchy 会隐藏原版的第一人称手臂，自己画手臂，再用**第三�
 
 ## 构建与测试
 
-需要 JDK 21，Gradle 本身也要用 JDK 21 运行：把 `JAVA_HOME` 设成 JDK 21，或在 `gradle.properties` 里加一行
-`org.gradle.java.home=<JDK 21 的路径>`。
+构建 Gradle 时使用 JDK 21；构建 26.x 时还需安装 JDK 25，并让 Gradle 工具链能够发现它。
+可在本机 `gradle.properties` 设置 `org.gradle.java.home` 与 `org.gradle.java.installations.paths`；源码包会过滤这些机器路径。
+源码已包含 Gradle Wrapper、Mod Menu 编译接口和三种格式的原创测试样例。首次构建需联网下载 Gradle、Minecraft 与 Fabric 依赖。
 
-源码包已包含 Gradle Wrapper 和编译需要的 Mod Menu 接口 jar，无需另装 Gradle；首次构建需要联网下载
-Gradle、Minecraft 和 Fabric 等依赖。源码包不包含本机 JDK 路径、游戏存档、投影文件、缓存或反编译研究资料。
-Windows PowerShell 在项目根目录执行 `./gradlew.bat build`；Linux / macOS 执行 `./gradlew build`。
+Windows PowerShell 示例（Linux / macOS 将 `./gradlew.bat` 换成 `./gradlew`）：
 
+```powershell
+./gradlew.bat build '-Pmc=1.20.1'
+./gradlew.bat build '-Pmc=26.3' '-Porg.gradle.java.installations.paths=<JDK25路径>,<JDK21路径>'
+./scripts/build-matrix.ps1                    # 全 24 版本构建、测试和 jar 元数据检查
+./gradlew.bat sourceRelease                  # 单个多版本源码 ZIP
+./gradlew.bat runSmokeClient '-Psmoke' '-Pmc=1.20.1' # 真实客户端：载入样例、预览、截图后退出
+./gradlew.bat runClientGameTest '-Pmc=1.21.11' '-PtestFile=src/test/resources/fixtures/original-house.litematic'
 ```
-gradlew build                                  # 编译 + 离线测试，成品在 build/libs/
-gradlew sourceRelease                          # 源码包：build/distributions/schematic-totem-<版本>-src.zip
-gradlew runClientGameTest "-PtestFile=<投影文件>" # 游戏内自动测试（会弹出窗口）：截图 + 每帧 CPU 时间
-gradlew runClientGameTest -Psweep=true         # 额外扫一遍候选姿势，截图用于调默认值
-gradlew runClientGameTest "-PwithMods=<Punchy 的 jar>"   # 带上其他模组测试；装了 Punchy 时会测量手部坐标并截图候选姿势
-```
 
-- 离线测试读取 `-Pschematics=<文件夹>` 里的所有投影；默认读取项目根目录的 `test-schematics/`，没有投影时会明确跳过。
-  发布包不附带投影文件；需要验证读取和模型生成时，请自行提供测试投影。
-- 游戏内测试用 `-PtestFile=<投影文件>` 指定投影，可另加 `-PbigTestFile=<大型投影文件>` 测试大型模型和完全还原。
-  这两个参数中的相对路径均相对于项目根目录；未指定时分别尝试游戏运行目录中的
-  `schematics/test.litematic`、`schematics/large.litematic`（大型投影不存在时跳过该项）。
-- 游戏内测试会检查：每个场景都换成了微缩模型；第一/第三人称各自用的是哪个姿势；把正在用的姿势缩小一半，屏幕上那只手的模型正好缩小一半，别的姿势不影响；姿势页打开在正在用的姿势上；物品栏图标用正面打光；完全还原是 1:1。
+- `-Pmc` 覆盖分支默认版本；完整锁定的依赖在 `versioning/versions.json`。`mc/<版本>` 分支默认构建对应版本。
+- 每版默认运行三项 JUnit 测试：三种格式一致性、读取体积上限、读取与模型生成管线。原创样例不是个人投影或游戏存档。
+- `-Pschematics=<目录>` 可让管线额外读取自己的投影。自备文件不进入发布包。
+- `build-matrix.ps1 -Minecraft '1.20','26.3'` 可选择版本；`-GradleArgument '<参数>'` 可传入工具链路径；脚本自动读取系统代理，可用 `-NoSystemProxy` 关闭。
+- `runSmokeClient -Psmoke` 只在独立的 `run/compat/<版本>/` 写配置、截图和 `compatibility-smoke.json`，不会加载个人存档。它验证真实资源模型和 GUI 绘制；世界内完整场景测试目前使用 1.21.11 的 `runClientGameTest`。
+- 1.21.11 游戏内测试还支持 `-PbigTestFile=<大型投影>`、`-Psweep=true`、`-PwithMods=<jar>`；参数的相对路径均相对项目根目录。
 
-源码发布：运行 `gradlew sourceRelease`，输出单一顶层目录的 `-src.zip`。包内包含 `src/`（主代码、离线测试和
-游戏内测试）、`gradle/wrapper/`、构建脚本、`.gitignore`、说明文档、MIT 许可及 `libs/` 下明确列出的编译依赖和许可。
-打包时自动去掉 `org.gradle.java.home`，使用固定文件时间和稳定顺序；不会将其他临时 jar 或工作目录一并打包。
+源码发布包为 `build/versions/<默认版本>/distributions/schematic-totem-1.3.0-multiversion-src.zip`。
+包含共享源码、API 差异层、依赖锁、测试、构建脚本、文档、许可证及 Mod Menu 编译接口；不包含 Minecraft、个人模组、存档、缓存、反编译资料或本机 JDK/代理路径。
+采用稳定文件顺序和固定时间戳；`gradlew` 保留 Unix 可执行权限。
 
 ## 许可
 
 MIT，见 `LICENSE`。
 
-`libs/modmenu-17.0.0.jar` 是 TerraformersMC 的 Mod Menu（MIT，许可证在 jar 里，另附 `libs/LICENSE-ModMenu.txt`）。
+`libs/modmenu/` 内是各版本 TerraformersMC Mod Menu 的编译接口（MIT，每个 jar 旁附上游原样许可）。
 它只在编译时提供“配置”按钮的接口，不会打包进成品。依赖说明见 `libs/README.md`。
 
 ---
 
-**English summary.** Client-only Fabric 1.21.11 mod: the Totem of Undying shows a miniature of a `.litematic`
+**English summary.** Client-only Fabric mod with separate artifacts for all 24 stable Minecraft releases from 1.20 through 26.3: the Totem of Undying shows a miniature of a `.litematic`
 (also `.schem` / structure `.nbt`). Drop the file onto the game window or use `/totemmodel load <file>`.
 
 **Settings**: `/totemmodel gui`, the Mod Menu config button, or a keybind.

@@ -1,0 +1,86 @@
+// Each build starts from the shared source tree, with explicit API-family overrides.
+apply from: "versioning/transform.gradle"
+def generated = layout.buildDirectory.dir("generated/sources/target/main")
+def overlays = []
+if (!targetMinecraft.startsWith("26.") && targetMinecraft != "1.21.11") overlays.add("legacy")
+if (targetMinecraft in ["1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10"]) overlays.add("item-state")
+if (targetMinecraft in ["1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10"]) overlays.add("block-parts")
+if (targetMinecraft in ["1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10"]) overlays.add("gui-state")
+if (targetMinecraft in ["1.21.9", "1.21.10"]) overlays.add("command-queue")
+if (targetMinecraft.startsWith("26.")) {
+    overlays.add("modern")
+    overlays.add("native-model")
+    if (targetMinecraft != "26.3") overlays.add("native-hands")
+    if (targetMinecraft.startsWith("26.1")) overlays.add("native-26.1")
+}
+overlays.add(targetMinecraft)
+
+tasks.register("prepareVersionSources") {
+    inputs.dir("src/main/java")
+    inputs.property("minecraft", targetMinecraft)
+    inputs.file("versioning/transform.gradle")
+    overlays.each { name -> inputs.files(fileTree("ports/${name}/java")) }
+    outputs.dir(generated)
+    doLast {
+        def destination = generated.get().asFile
+        destination.mkdirs()
+        def sources = [:]
+        ([file("src/main/java")] + overlays.collect { file("ports/${it}/java") }).each { source ->
+            if (source.exists()) fileTree(source).matching { include "**/*.java" }.each { sourceFile ->
+                sources[source.toPath().relativize(sourceFile.toPath()).toString()] = sourceFile
+            }
+        }
+        def transform = project.ext.transformVersionSource
+        if (targetMinecraft in ["1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10"]) {
+            sources.keySet().removeAll { it.replace('\\', '/').endsWith('/compat/CompatNbt.java') }
+        }
+        if (targetMinecraft in ["1.21.9", "1.21.10"]) sources.keySet().removeAll { it.replace('\\', '/').endsWith('/render/StateMeshRenderer.java') }
+        sources.each { relative, source ->
+            def target = new File(destination, relative)
+            target.parentFile.mkdirs()
+            target.setText(transform(relative.replace('\\', '/'), source.getText("UTF-8").replace("\r\n", "\n")), "UTF-8")
+        }
+        // Remove only generated Java files no longer present in the selected source layers.
+        fileTree(destination).matching { include "**/*.java" }.each { existing ->
+            if (!sources.containsKey(destination.toPath().relativize(existing.toPath()).toString())) existing.delete()
+        }
+    }
+}
+sourceSets.main.java.setSrcDirs([generated])
+tasks.named("compileJava") { dependsOn("prepareVersionSources") }
+
+def generatedTests = layout.buildDirectory.dir("generated/sources/target/test")
+tasks.register("prepareVersionTestSources") {
+    inputs.dir("src/test/java")
+    inputs.file("versioning/transform.gradle")
+    inputs.property("minecraft", targetMinecraft)
+    if (unobfuscated) inputs.dir("ports/modern/test")
+    outputs.dir(generatedTests)
+    doLast {
+        def source = file(unobfuscated ? "ports/modern/test" : "src/test/java")
+        def destination = generatedTests.get().asFile
+        destination.mkdirs()
+        fileTree(source).matching { include "**/*.java" }.each { sourceFile ->
+            def relative = source.toPath().relativize(sourceFile.toPath()).toString()
+            def target = new File(destination, relative)
+            target.parentFile.mkdirs()
+            target.setText(project.ext.transformVersionSource(relative.replace('\\', '/'), sourceFile.getText("UTF-8").replace("\r\n", "\n")), "UTF-8")
+        }
+    }
+}
+sourceSets.test.java.setSrcDirs([generatedTests])
+tasks.named("compileTestJava") { dependsOn("prepareVersionTestSources") }
+processResources {
+    if (targetMinecraft != "1.21.11") exclude "schematictotem.accesswidener"
+    filesMatching("schematictotem.mixins.json") {
+        filter { line ->
+            def value = line.replace("JAVA_21", "JAVA_${targetConfig.java}")
+            if (unobfuscated) return value.replace('"MouseMixin"', '"MouseMixin", "GuiGraphicsAccessor", "ItemStackRenderStateAccessor"')
+            if (targetMinecraft in ["1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10"]) return value.replace('"MouseMixin"', '"MouseMixin", "DrawContextAccessor"')
+            return value
+        }
+    }
+    filesMatching("fabric.mod.json") {
+        if (targetMinecraft != "1.21.11") filter { line -> line.contains('"accessWidener"') ? null : line }
+    }
+}

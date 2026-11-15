@@ -12,3 +12,7 @@ dist/
 research/
 # Local schematic fixtures are supplied by the developer, not shipped with source releases.
 test-schematics/
+# Local copies of upstream version metadata; versions.json is the checked-in build lock.
+versioning/*-metadata.xml
+versioning/*-manifest.json
+versioning/fabric-game-versions.json

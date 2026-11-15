@@ -107,11 +107,17 @@ public final class MiniatureClientGameTest implements FabricClientGameTest {
             sp.getServer().runCommand("item replace entity @p weapon.mainhand with minecraft:totem_of_undying");
             sp.getServer().runCommand("item replace entity @p weapon.offhand with minecraft:totem_of_undying");
             sp.getServer().runCommand("fill -4 -60 -5 4 -55 -5 minecraft:white_concrete");
-            sp.getServer().runCommand("summon minecraft:item_frame -1 -58 -4 {Facing:3b,Item:{id:\"minecraft:totem_of_undying\",count:1},Fixed:1b}");
-            sp.getServer().runCommand("summon minecraft:item_frame 1 -58 -4 {Facing:3b,Item:{id:\"minecraft:totem_of_undying\",count:1},Fixed:1b,ItemRotation:2b}");
+            sp.getServer().runCommand("summon minecraft:item_frame -1 -58 -4 {block_pos:[I;-1,-58,-4],Facing:3b,Item:{id:\"minecraft:totem_of_undying\",count:1},Fixed:1b}");
+            sp.getServer().runCommand("summon minecraft:item_frame 1 -58 -4 {block_pos:[I;1,-58,-4],Facing:3b,Item:{id:\"minecraft:totem_of_undying\",count:1},Fixed:1b,ItemRotation:2b}");
             sp.getServer().runCommand("summon minecraft:item 0.5 -60 -2.5 {Item:{id:\"minecraft:totem_of_undying\",count:1},PickupDelay:32767,Age:-32768}");
             sp.getServer().runCommand("tp @p 0.5 -60 0.5 180 10");
             context.waitTicks(40);
+
+            int frameCount = context.computeOnClient(client -> client.world.getEntitiesByClass(
+                    net.minecraft.entity.decoration.ItemFrameEntity.class,
+                    new net.minecraft.util.math.Box(-4, -61, -6, 4, -54, -2), entity -> entity.isAlive()).size());
+            report.put("sceneItemFrames", frameCount);
+            if (frameCount != 2) failures.add("expected two item frames in the scene, got " + frameCount);
 
             clearChat();
             shots("default");

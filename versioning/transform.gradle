@@ -1,0 +1,349 @@
+ext.transformVersionSource = { String path, String text ->
+    def number = { String version -> version.tokenize('.').collect { it as int } }
+    def before = { String version ->
+        def left = number(targetMinecraft), right = number(version)
+        for (int i = 0; i < Math.max(left.size(), right.size()); i++) {
+            int a = i < left.size() ? left[i] : 0, b = i < right.size() ? right[i] : 0
+            if (a != b) return a < b
+        }
+        return false
+    }
+    if (path.endsWith('/SchematicPipelineTest.java') && targetMinecraft != '1.21.11') {
+        text = text.replaceAll(/(?m)^import (?:com\.mojang\.blaze3d\.vertex|net\.minecraft\.client\.render|net\.minecraft\.client\.util\.BufferAllocator)\.[^;]+;\n/, '')
+                .replace('import net.minecraft.client.util.BufferAllocator;\n', '')
+        int benchmark = text.indexOf('    private static String emitBenchmark(')
+        if (benchmark >= 0) text = text.substring(0, benchmark) + '    private static String emitBenchmark(Miniature.Level level) { return "not measured"; }\n}\n'
+    }
+    if (path.endsWith('/CompatibilitySmoke.java') && !before('1.21.9')) text = text.replace('button.onPress();', 'button.onPress(null);')
+    if (unobfuscated) {
+        if (path.endsWith('/CompatibilitySmoke.java')) {
+            text = text.replace('net.minecraft.client.MinecraftClient', 'net.minecraft.client.Minecraft')
+                    .replace('MinecraftClient', 'Minecraft')
+                    .replace('net.minecraft.client.gui.widget.ButtonWidget', 'net.minecraft.client.gui.components.Button')
+                    .replace('ButtonWidget', 'Button')
+                    .replace('net.minecraft.text.Text', 'net.minecraft.network.chat.Component')
+                    .replace('Text.translatable(', 'Component.translatable(')
+                    .replace('client.currentScreen', 'client.screen')
+                    .replace('net.minecraft.client.util.ScreenshotRecorder', 'net.minecraft.client.Screenshot')
+                    .replace('ScreenshotRecorder.saveScreenshot(', 'Screenshot.grab(')
+                    .replace('client.getFramebuffer()', 'client.getMainRenderTarget()')
+                    .replace('client.scheduleStop()', 'client.stop()')
+            if (!targetMinecraft.startsWith('26.1')) text = text.replace('client.getOverlay()', 'client.gui.overlay()')
+            if (!targetMinecraft.startsWith('26.1')) text = text.replace('Screenshot.grab(Path.of(".").toFile(), client.getMainRenderTarget(), message -> {});', 'Screenshot.grab(client, false);')
+        }
+        text = text.replace('net.minecraft.client.gui.GuiGraphics;', 'net.minecraft.client.gui.GuiGraphicsExtractor;')
+                .replace('ClientCommandManager.', 'ClientCommands.')
+                .replace('import org.lwjgl.glfw.GLFW;', '')
+                .replace('InputConstants.Type.KEYSYM', 'InputConstants.Type.KEYBOARD')
+                .replace('GLFW.GLFW_KEY_UNKNOWN', 'InputConstants.UNKNOWN.getValue()')
+                .replace('client.screen', 'client.gui.screen()').replace('minecraft.screen', 'minecraft.gui.screen()')
+                .replace('client.setScreen(', 'client.gui.setScreen(').replace('minecraft.setScreen(', 'minecraft.gui.setScreen(')
+                .replace('Minecraft.getInstance().setScreen(', 'Minecraft.getInstance().gui.setScreen(')
+                .replace('client.player.displayClientMessage(', 'client.player.sendSystemMessage(')
+                .replace('.append(text), false);', '.append(text));')
+                .replace('client.gameRenderer.getMainCamera()', 'client.gameRenderer.mainCamera()')
+                .replace('matrices.mulPose(', 'matrices.rotate(')
+                .replace('layer.setTransform(transform)', 'layer.setItemTransform(transform)')
+                .replace('Util.getPlatform().openPath(dir)', 'dev.yimeng.schematictotem.compat.PlatformBridge.openPath(dir)')
+                .replace('GuiGraphics context', 'GuiGraphicsExtractor context')
+                .replace('net.minecraft.client.renderer.LightTexture;', 'net.minecraft.util.LightCoordsUtil;')
+                .replace('LightTexture.', 'LightCoordsUtil.')
+                .replace('net.minecraft.client.renderer.block.BlockModelShaper;', 'net.minecraft.client.renderer.block.BlockStateModelSet;')
+                .replace('BlockModelShaper', 'BlockStateModelSet')
+                .replace('getBlockModelShaper()', 'getBlockStateModelSet()')
+                .replace('net.minecraft.client.renderer.block.model.BlockModelPart;', 'net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;')
+                .replace('BlockModelPart', 'BlockStateModelPart')
+                .replace('net.minecraft.client.renderer.block.model.ItemTransform', 'net.minecraft.client.resources.model.cuboid.ItemTransform')
+                .replace('net.minecraft.world.level.BlockAndTintGetter', 'net.minecraft.client.renderer.block.BlockAndTintGetter')
+                .replace('.specialBlockModelRenderer()', '.getBlockModelSet()')
+                .replace('models.getBlockModel(', 'models.get(')
+                .replace('.particleIcon()', '.particleMaterial().sprite()')
+                .replace('sprite.contents().isAnimated()', 'sprite.isAnimated()')
+                .replace('context.drawCenteredString(', 'context.centeredText(')
+                .replace('context.drawString(', 'context.text(')
+                .replace('context.renderOutline(', 'context.outline(')
+                .replace('void render(GuiGraphicsExtractor context', 'void extractRenderState(GuiGraphicsExtractor context')
+                .replace('super.render(context,', 'super.extractRenderState(context,')
+                .replace('void renderBackground(GuiGraphicsExtractor context', 'void extractBackground(GuiGraphicsExtractor context')
+                .replace('super.renderBackground(context,', 'super.extractBackground(context,')
+                .replace('context.guiRenderState.submitPicturesInPictureState(', '((dev.yimeng.schematictotem.mixin.GuiGraphicsAccessor) (Object) context).schematictotem$renderState().addPicturesInPictureState(')
+                .replace('SpecialGuiElementRegistry', 'PictureInPictureRendererRegistry')
+                .replace('new MiniaturePreviewRenderer(context.vertexConsumers())', 'new MiniaturePreviewRenderer()')
+                .replace('net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper', 'net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper')
+                .replace('KeyBindingHelper.registerKeyBinding(', 'KeyMappingHelper.registerKeyMapping(')
+        if (!path.contains('/compat/') && !path.endsWith('/StubBlockModels.java')) {
+            text = text.replace('import net.minecraft.client.renderer.block.model.BakedQuad;', 'import dev.yimeng.schematictotem.compat.CompatQuad;')
+                    .replace('BakedQuad', 'CompatQuad')
+                    .replace('for (CompatQuad quad : part.getQuads(DIRS[d]))', 'for (CompatQuad quad : CompatQuad.wrap(part.getQuads(DIRS[d])))')
+                    .replace('for (CompatQuad quad : part.getQuads(null))', 'for (CompatQuad quad : CompatQuad.wrap(part.getQuads(null)))')
+                    .replace('net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry', 'dev.yimeng.schematictotem.compat.CompatFluidRenderHandlerRegistry')
+                    .replace('net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler', 'dev.yimeng.schematictotem.compat.CompatFluidRenderHandler')
+                    .replace('FluidRenderHandlerRegistry.INSTANCE', 'CompatFluidRenderHandlerRegistry.INSTANCE')
+                    .replace('FluidRenderHandler handler', 'CompatFluidRenderHandler handler')
+        }
+        if (path.endsWith('/Miniature.java')) {
+            text = text.replace('colors.getColor(key.state(), view, pos, key.tintIndex())', 'view == null ? colors.getTintSource(key.state(), key.tintIndex()).color(key.state()) : colors.getTintSource(key.state(), key.tintIndex()).colorInWorld(key.state(), view, pos)')
+        }
+        if (path.endsWith('/TintView.java')) {
+            text = text.replace('public float getShade(Direction direction, boolean shaded) {\n        return 1.0F;\n    }', 'public net.minecraft.world.level.CardinalLighting cardinalLighting() {\n        return net.minecraft.world.level.CardinalLighting.DEFAULT;\n    }')
+        }
+        if (path.endsWith('/MiniatureBaker.java')) {
+            text = text.replace('import net.minecraft.client.renderer.ItemBlockRenderTypes;', '')
+                    .replace('if (blockEntities && s.blockEntity != null', 'if (blockEntities && !s.model && s.blockEntity != null')
+                    .replace('ItemBlockRenderTypes.getRenderLayer(fluidState) == ChunkSectionLayer.TRANSLUCENT', 'fluidSprites[0].transparency() == com.mojang.blaze3d.platform.Transparency.TRANSLUCENT')
+                    .replace('ItemBlockRenderTypes.getChunkRenderType(state) == ChunkSectionLayer.TRANSLUCENT', 'models.get(state).hasMaterialFlag(net.minecraft.client.resources.model.geometry.BakedQuad.FLAG_TRANSLUCENT)')
+        }
+        if (path.endsWith('/StubBlockModels.java')) {
+            text = text.replace('net.minecraft.client.renderer.block.model.BlockStateModel;', 'net.minecraft.client.renderer.block.dispatch.BlockStateModel;')
+                    .replace('import net.minecraft.client.renderer.block.model.BakedQuad;', 'import net.minecraft.client.resources.model.geometry.BakedQuad;')
+                    .replace('super(null);', 'super(java.util.Map.of(), null);')
+                    .replace('getBlockModel(BlockState state)', 'get(BlockState state)')
+                    .replace('0L, 0L, 0L, 0L, -1, d, null, true, 0)', '0L, 0L, 0L, 0L, d, new BakedQuad.MaterialInfo(null, net.minecraft.client.renderer.chunk.ChunkSectionLayer.SOLID, null, null, null, -1, d, 0))')
+                    .replaceAll(/public TextureAtlasSprite particleIcon\(\) \{\s*return null;\s*\}/,
+                            'public net.minecraft.client.resources.model.sprite.Material.Baked particleMaterial() { return new net.minecraft.client.resources.model.sprite.Material.Baked(null, false); }\n        public int materialFlags() { return 0; }')
+        }
+        if (path.endsWith('/MiniatureMeshRenderer.java')) {
+            text = text.replace('void render(@Nullable Data data, ItemDisplayContext displayContext, PoseStack matrices,', 'void submit(@Nullable Data data, PoseStack matrices,')
+                    .replace('BlockEntityPartsRenderer.INSTANCE.render(level.blockEntities, displayContext, matrices, queue, light, overlay, glint, outlineColor)', 'BlockEntityPartsRenderer.INSTANCE.render(level.blockEntities, matrices, queue, light, overlay, outlineColor)')
+        }
+        if (path.endsWith('/TotemConfigScreen.java')) {
+            text = text.replace('private final ItemStack totem = new ItemStack(Items.TOTEM_OF_UNDYING);', 'private ItemStack totem = ItemStack.EMPTY;')
+                    .replace('        if (previewMode == PreviewMode.POP) {', '''        if (minecraft.level == null) {
+            TotemModels.INSTANCE.renderPreview(previewState, previewMode == PreviewMode.POP ? ItemDisplayContext.FIXED : previewMode.context);
+        } else {
+        if (totem.isEmpty()) totem = new ItemStack(Items.TOTEM_OF_UNDYING);
+        if (previewMode == PreviewMode.POP) {''')
+                    .replace('        if (previewState.isEmpty()) return;', '        }\n        if (previewState.isEmpty()) return;')
+        }
+        if (targetMinecraft.startsWith('26.1') && path.endsWith('/SchematicTotemClient.java')) {
+            text = text.replace('new MiniaturePreviewRenderer()', 'new MiniaturePreviewRenderer(context.bufferSource())')
+        }
+        text = text.replace('layer.setParticleIcon(miniature.particle)', 'layer.setParticleMaterial(new net.minecraft.client.resources.model.sprite.Material.Baked(miniature.particle, false))')
+        if (targetMinecraft != '26.3') {
+            text = text.replace('matrices.rotate(', 'matrices.mulPose(')
+                    .replace('InputConstants.Type.KEYBOARD', 'InputConstants.Type.KEYSYM')
+                    .replace('q.materialInfo().shadeDirectionOverride() != null', 'q.materialInfo().shade()')
+                    .replace('new BakedQuad.MaterialInfo(null, net.minecraft.client.renderer.chunk.ChunkSectionLayer.SOLID, null, null, null, -1, d, 0)',
+                            'new BakedQuad.MaterialInfo(null, net.minecraft.client.renderer.chunk.ChunkSectionLayer.SOLID, null, -1, true, 0)')
+            if (targetMinecraft == '26.2' && path.endsWith('/HeldItemRendererMixin.java')) text = text.replace('renderHandsWithItems(', 'submitHandsWithItems(')
+        }
+        if (targetMinecraft.startsWith('26.1')) {
+            text = text.replace('sprite.isAnimated()', 'sprite.contents().isAnimated()')
+                    .replace('client.gui.screen()', 'client.screen').replace('minecraft.gui.screen()', 'minecraft.screen')
+                    .replace('client.gui.setScreen(', 'client.setScreen(').replace('minecraft.gui.setScreen(', 'minecraft.setScreen(')
+                    .replace('Minecraft.getInstance().gui.setScreen(', 'Minecraft.getInstance().setScreen(')
+                    .replace('client.gameRenderer.mainCamera()', 'client.gameRenderer.getMainCamera()')
+        }
+        return text
+    }
+    if (!before('1.21.11')) return text
+    if (before('1.21.6') && (path.endsWith('/TotemConfigScreen.java') || path.endsWith('/FilePickerScreen.java'))) {
+        def backgroundCall = before('1.20.2') ? 'renderBackground(context);' : 'renderBackground(context, mouseX, mouseY, deltaTicks);'
+        text = text.replace('        super.render(context, mouseX, mouseY, deltaTicks);', "        ${backgroundCall}\n        super.render(context, mouseX, mouseY, deltaTicks);")
+    }
+    if (!path.contains('/compat/') && !path.endsWith('/StateModelBridge.java')) {
+        text = text.replace('import net.minecraft.item.ItemDisplayContext;', 'import net.minecraft.client.render.model.json.ModelTransformationMode;')
+                .replace('ItemDisplayContext', 'ModelTransformationMode')
+                .replace('import net.minecraft.client.util.math.Vector2f;', 'import dev.yimeng.schematictotem.compat.PackedUv;')
+                .replace('Vector2f.', 'PackedUv.')
+                .replace('import net.minecraft.client.render.model.BakedQuad;', 'import dev.yimeng.schematictotem.compat.CompatQuad;')
+                .replaceAll(/\bBakedQuad\b/, 'CompatQuad')
+                .replace('import net.minecraft.client.render.block.BlockModels;', 'import dev.yimeng.schematictotem.compat.CompatBlockModels;')
+                .replaceAll(/\bBlockModels\b/, 'CompatBlockModels')
+                .replace('CompatCompatBlockModels', 'CompatBlockModels')
+                .replace('import net.minecraft.client.render.model.BlockModelPart;', 'import dev.yimeng.schematictotem.compat.CompatBlockModels.Part;')
+                .replace('BlockModelPart', 'Part')
+                .replace('import net.minecraft.client.render.BlockRenderLayer;', 'import net.minecraft.client.render.RenderLayer;')
+                .replace('import net.minecraft.client.render.BlockRenderLayers;', 'import net.minecraft.client.render.RenderLayers;')
+                .replace('BlockRenderLayers.', 'RenderLayers.').replace('BlockRenderLayer.TRANSLUCENT', 'RenderLayer.getTranslucent()')
+                .replace('.getPositiveHorizontalDegrees()', '.asRotation()')
+                .replace('.getEntityPos()', '.getPos()')
+                .replace('.getCameraPos()', '.getPos()')
+                .replace('getRegistryManager().getOrThrow(', 'getRegistryManager().get(')
+                .replace('.getOptionalValue(', '.getOrEmpty(')
+                .replace('Util.getOperatingSystem().open(dir)', 'Util.getOperatingSystem().open(dir.toFile())')
+                .replace('new HoverEvent.ShowText(', 'new HoverEvent(HoverEvent.Action.SHOW_TEXT, ')
+                .replace('new ClickEvent.RunCommand(', 'new ClickEvent(ClickEvent.Action.RUN_COMMAND, ')
+                .replace('NbtHelper.toBlockState(Registries.BLOCK, input)', 'NbtHelper.toBlockState(Registries.BLOCK.getReadOnlyWrapper(), input)')
+                .replace('box.getLengthX()', '(box.maxX - box.minX)').replace('box.getLengthY()', '(box.maxY - box.minY)').replace('box.getLengthZ()', '(box.maxZ - box.minZ)')
+                .replace('still.getFrameU(', 'PackedUv.u(still, ').replace('still.getFrameV(', 'PackedUv.v(still, ')
+                .replace('flowing.getFrameU(', 'PackedUv.u(flowing, ').replace('flowing.getFrameV(', 'PackedUv.v(flowing, ')
+                .replace('other.getCullingFace(side.getOpposite())', 'other.getCullingFace(EmptyBlockView.INSTANCE, BlockPos.ORIGIN, side.getOpposite())')
+                .replace('Block.shouldDrawSide(self, other, side)', '!self.isSideInvisible(other, side) && (!other.isOpaque() || net.minecraft.util.shape.VoxelShapes.matchesAnywhere(self.getCullingFace(EmptyBlockView.INSTANCE, BlockPos.ORIGIN, side), other.getCullingFace(EmptyBlockView.INSTANCE, BlockPos.ORIGIN, side.getOpposite()), net.minecraft.util.function.BooleanBiFunction.ONLY_FIRST))')
+                .replace('client.currentScreen.onFilesDropped(rest)', 'client.currentScreen.filesDragged(rest)')
+                .replace('sprite.getContents().isAnimated()', 'sprite.getContents().getDistinctFrameCount().limit(2).count() > 1')
+    }
+    if (path.endsWith('/SchematicTotemClient.java')) {
+        if (before('1.21.6')) text = text.replace('import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;', '')
+                .replace('        SpecialGuiElementRegistry.register(context -> new MiniaturePreviewRenderer(context.vertexConsumers()));', '')
+        if (before('1.21.9')) text = text.replace('KeyBinding.Category.create(Identifier.of(MOD_ID, "main"))', '"key.categories.schematictotem"')
+    }
+    if (path.endsWith('/TotemModels.java')) {
+        if (before('1.21.4')) text = text.replace('import net.minecraft.client.render.item.ItemRenderState;', '''import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.util.math.MatrixStack;
+import dev.yimeng.schematictotem.compat.CompatBlockModels;''')
+                .replace('public boolean tryRender(ItemRenderState state, ItemStack stack, ModelTransformationMode context, @Nullable HeldItemContext held)',
+                        'public boolean tryRender(ItemStack stack, ModelTransformationMode context, @Nullable LivingEntity held, boolean leftHand, MatrixStack matrices, VertexConsumerProvider consumers, int light, int overlay)')
+                .replace('return MiniatureRenderer.render(state, stack, context, held, held == null ? trackedEntity : null, miniature, config, slot.composed,\n                slot.transformKey);',
+                        'return MiniatureRenderer.render(stack, context, held, held == null ? trackedEntity : null, leftHand, matrices, consumers, light, overlay, miniature, config, slot.composed);')
+        else text = text.replace('import net.minecraft.util.HeldItemContext;', 'import dev.yimeng.schematictotem.compat.CompatBlockModels;')
+                .replace('@Nullable HeldItemContext held', '@Nullable LivingEntity held')
+        text = text.replace('import net.minecraft.util.HeldItemContext;', '')
+                .replace('LivingEntity owner = held.getEntity();', 'LivingEntity owner = held;')
+                .replace('client.getBakedModelManager().getBlockEntityModelsSupplier()', 'client.getBlockRenderManager().getModel(net.minecraft.block.Blocks.STONE.getDefaultState())')
+                .replace('var models = client.getBakedModelManager().getCompatBlockModels();', 'var models = new CompatBlockModels(client.getBlockRenderManager().getModels());')
+                .replace('var models = client.getBakedModelManager().getBlockModels();', 'var models = new CompatBlockModels(client.getBlockRenderManager().getModels());')
+    }
+    if (path.endsWith('/PoseComposer.java') && before('1.21.9')) {
+        text = text.replace(',\n                fitProjected(poses.onShelf, orientation, turned, FIXED_FILL, options.size)', '')
+    }
+    if (path.endsWith('/TotemConfigScreen.java')) {
+        if (before('1.21.6')) {
+            text = text.replace('import net.minecraft.client.gui.Click;', '')
+                .replace('import net.minecraft.client.render.item.ItemRenderState;', '')
+                .replace('    private final ItemRenderState previewState = new ItemRenderState();', '')
+        int start = text.indexOf('        if (previewMode == PreviewMode.POP) {')
+        int end = text.indexOf('        Quaternionf view =', start)
+        if (start >= 0 && end > start) text = text.substring(0, start) + text.substring(end)
+        text = text.replace('context.state.addSpecialElement(MiniaturePreviewRenderer.State.of(previewState, view, boxX, boxY, boxX + boxSize, boxY + boxSize,\n                boxSize * zoom * previewMode.scale));',
+                'MiniaturePreviewRenderer.draw(context, totem, previewMode.context, view, boxX, boxY, boxSize, boxSize * zoom * previewMode.scale);')
+        } else {
+            text = text.replace('context.state.addSpecialElement(', '((dev.yimeng.schematictotem.mixin.DrawContextAccessor) (Object) context).schematictotem$renderState().addSpecialElement(')
+        }
+        if (before('1.21.9')) text = text.replace('import net.minecraft.client.gui.Click;', '')
+                .replace('mouseClicked(Click click, boolean doubled)', 'mouseClicked(double mouseX, double mouseY, int button)')
+                .replace('inBox(click.x(), click.y())', 'inBox(mouseX, mouseY)')
+                .replace('if (doubled) resetView();', 'long clickAt = System.nanoTime();\n            if (lastPreviewClick != 0 && clickAt - lastPreviewClick < 300_000_000L) resetView();\n            lastPreviewClick = clickAt;')
+                .replace('super.mouseClicked(click, doubled)', 'super.mouseClicked(mouseX, mouseY, button)')
+                .replace('mouseDragged(Click click, double offsetX, double offsetY)', 'mouseDragged(double mouseX, double mouseY, int button, double offsetX, double offsetY)')
+                .replace('super.mouseDragged(click, offsetX, offsetY)', 'super.mouseDragged(mouseX, mouseY, button, offsetX, offsetY)')
+                .replace('mouseReleased(Click click)', 'mouseReleased(double mouseX, double mouseY, int button)')
+                .replace('super.mouseReleased(click)', 'super.mouseReleased(mouseX, mouseY, button)')
+        text = text.replace(')),\n                            client.options.getPerspective())', '))).initially(client.options.getPerspective())')
+                .replace(' + auto)), o.front)', ' + auto))).initially(o.front)')
+                .replace(' + a), o.anchor)', ' + a)).initially(o.anchor)')
+                .replace('builder(PoseKind::label, poseKind)', 'builder(PoseKind::label).initially(poseKind)')
+                .replace("id.replace(':', '.')), biome)", "id.replace(':', '.'))).initially(biome)")
+                .replace('context.drawStrokedRectangle(', 'context.drawBorder(')
+        if (before('1.21.9')) text = text.replace('private boolean draggingPreview;', 'private boolean draggingPreview;\n    private long lastPreviewClick;')
+    }
+    if (path.endsWith('/ValueSlider.java')) {
+        text = text.replace('setValue((Math.max(min, Math.min(max, v)) - min) / (max - min));', 'this.value = (Math.max(min, Math.min(max, v)) - min) / (max - min); applyValue(); updateMessage();')
+    }
+    if (before('1.21.2') && !path.contains('/compat/')) text = text.replace('state.isOpaqueFullCube()', 'state.isOpaqueFullCube(EmptyBlockView.INSTANCE, BlockPos.ORIGIN)')
+    if (before('1.21')) {
+        text = text.replace('Identifier.of(', 'new Identifier(')
+        if (path.endsWith('/Mesh.java')) {
+            text = text.replace('pose.transformNormal(d.getFloatVector(), n);', 'n.set(d.getOffsetX(), d.getOffsetY(), d.getOffsetZ()).mul(pose.getNormalMatrix()).normalize();')
+                    .replace('LightmapTextureManager.applyEmission(light, e)', 'Math.max(light & 0xffff, e << 4) | (light & 0xffff0000)')
+                    .replace('color, uvs[t], uvs[t + 1], overlay, l, nx, ny, nz);',
+                            '(color >>> 16 & 255) / 255.0F, (color >>> 8 & 255) / 255.0F, (color & 255) / 255.0F, (color >>> 24) / 255.0F, uvs[t], uvs[t + 1], overlay, l, nx, ny, nz);')
+        }
+    }
+    if (before('1.20.5')) {
+        text = text.replace('import net.minecraft.component.DataComponentTypes;', '')
+                .replace('Text name = stack.get(DataComponentTypes.CUSTOM_NAME);', 'Text name = stack.hasCustomName() ? stack.getName() : null;')
+    }
+    if (path.endsWith('/SchematicReader.java') && before('1.21.5')) {
+        text = text.replace('package dev.yimeng.schematictotem.schematic;', 'package dev.yimeng.schematictotem.schematic;\nimport dev.yimeng.schematictotem.compat.CompatNbt;')
+                .replace('.getCompoundOrEmpty(', '.getCompound(')
+                .replace('.getListOrEmpty(0)', '.getList(0)')
+                .replaceAll(/(\w+)\.getListOrEmpty\(("[^"]*")\)/, 'CompatNbt.list($1, $2)')
+                .replaceAll(/(\w+)\.getInt\(([^,()]+), ([^()]+?)\)/, 'CompatNbt.integer($1, $2, $3)')
+                .replaceAll(/(\w+)\.getShort\(([^,()]+), \(short\) ([0-9]+)\)/, 'CompatNbt.shortValue($1, $2, (short) $3)')
+                .replace('.orElse(new long[0])', '').replace('.orElse(new byte[0])', '')
+                .replace('getGameVersion().dataVersion().id()', 'getGameVersion().getSaveVersion().getId()')
+                .replace('NbtIo.readCompound(', 'NbtIo.read(')
+        if (before('1.20.2')) {
+            text = text.replace('NbtSizeTracker', 'NbtTagSizeTracker')
+                    .replace('NbtTagSizeTracker.of(NBT_LIMIT)', 'new NbtTagSizeTracker(NBT_LIMIT)')
+                    .replace('NbtIo.readCompressed(raw, new NbtTagSizeTracker(NBT_LIMIT))', 'NbtIo.read(new DataInputStream(new java.util.zip.GZIPInputStream(raw)), new NbtTagSizeTracker(NBT_LIMIT))')
+        }
+    }
+    if (before('1.20.2') && path.endsWith('/TotemConfigScreen.java')) {
+        text = text.replace('renderBackground(DrawContext context, int mouseX, int mouseY, float deltaTicks)', 'renderBackground(DrawContext context)')
+                .replace('super.renderBackground(context, mouseX, mouseY, deltaTicks)', 'super.renderBackground(context)')
+                .replace('double horizontalAmount, double verticalAmount', 'double verticalAmount')
+                .replace('super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)', 'super.mouseScrolled(mouseX, mouseY, verticalAmount)')
+    }
+    if (!before('1.21.2')) {
+        text = text.replace('net.minecraft.client.render.model.json.ModelTransformationMode', 'net.minecraft.item.ModelTransformationMode')
+                .replace('Lnet/minecraft/client/render/model/json/ModelTransformationMode;', 'Lnet/minecraft/item/ModelTransformationMode;')
+                .replace('quad.getColorIndex()', 'quad.getTintIndex()')
+                .replace('.getOrEmpty(identifier)', '.getOptionalValue(identifier)')
+                .replace('biomes.getOrEmpty(', 'biomes.getOptionalValue(')
+                .replace('getRegistryManager().get(', 'getRegistryManager().getOrThrow(')
+                .replace('Registries.BLOCK.getReadOnlyWrapper()', 'Registries.BLOCK')
+                .replace('self.getCullingFace(EmptyBlockView.INSTANCE, BlockPos.ORIGIN, side)', 'self.getCullingFace(side)')
+                .replace('other.getCullingFace(EmptyBlockView.INSTANCE, BlockPos.ORIGIN, side.getOpposite())', 'other.getCullingFace(side.getOpposite())')
+                .replace('.asRotation()', '.getPositiveHorizontalDegrees()')
+                .replace('client.currentScreen.filesDragged(rest)', 'client.currentScreen.onFilesDropped(rest)')
+    }
+    if (path.endsWith('/StubBlockModels.java')) {
+        text = text.replace('import net.minecraft.client.render.model.BlockStateModel;', 'import dev.yimeng.schematictotem.compat.CompatBlockModels.Model;')
+                .replace('BlockStateModel', 'Model')
+    }
+    if (path.endsWith('/Mesh.java')) {
+        text = text.replace('pose.transformNormal(d.getFloatVector(), n);', 'n.set(d.getOffsetX(), d.getOffsetY(), d.getOffsetZ()).mul(pose.getNormalMatrix()).normalize();')
+                .replace('LightmapTextureManager.applyEmission(light, e)', 'Math.max(light & 0xffff, e << 4) | (light & 0xffff0000)')
+    }
+    if (path.endsWith('/mixin/MouseMixin.java') && !before('1.21')) {
+        text = text.replace('List<Path> paths, CallbackInfo ci)', 'List<Path> paths, int invalidFilesCount, CallbackInfo ci)')
+                .replace('        ci.cancel();', '        ci.cancel();\n        if (invalidFilesCount > 0) net.minecraft.client.toast.SystemToast.addFileDropFailure(client, invalidFilesCount);')
+    }
+    if (path.endsWith('/SchematicReader.java') && !before('1.20.2') && before('1.21.5')) {
+        text = text.replace('return NbtIo.read(new DataInputStream(raw),', 'return NbtIo.readCompound(new DataInputStream(raw),')
+        if (before('1.20.4')) text = text.replace('NbtSizeTracker', 'NbtTagSizeTracker')
+        if (before('1.20.3')) {
+            text = text
+                    .replace('NbtIo.readCompressed(raw, NbtTagSizeTracker.of(NBT_LIMIT))', 'NbtIo.readCompound(new DataInputStream(new java.util.zip.GZIPInputStream(raw)), NbtTagSizeTracker.of(NBT_LIMIT))')
+        }
+    }
+    if (!before('1.21.5')) {
+        text = text.replace('ModelTransformationMode', 'ItemDisplayContext')
+                .replace('new HoverEvent(HoverEvent.Action.SHOW_TEXT, ', 'new HoverEvent.ShowText(')
+                .replace('new ClickEvent(ClickEvent.Action.RUN_COMMAND, ', 'new ClickEvent.RunCommand(')
+                .replace('quad.getVertexData()', 'quad.vertexData()')
+                .replace('quad.getTintIndex()', 'quad.tintIndex()')
+                .replace('quad.getFace()', 'quad.face()')
+                .replace('quad.getSprite()', 'quad.sprite()')
+                .replace('quad.hasShade()', 'quad.shade()')
+                .replace('RenderSystem.enableDepthTest();', '')
+        if (path.endsWith('/Miniature.java')) {
+            text = text.replace('public final Vector3fc[] cornerArray;', 'public final Vector3fc[] cornerArray;\n    public final java.util.function.Supplier<org.joml.Vector3f[]> legacyCorners;')
+                    .replace('this.cornerArray = corners;', 'this.cornerArray = corners;\n        org.joml.Vector3f[] legacy = java.util.Arrays.stream(corners).map(org.joml.Vector3f::new).toArray(org.joml.Vector3f[]::new);\n        this.legacyCorners = () -> legacy;')
+        }
+    }
+    if (before('1.21.6')) text = text.replace('getGameVersion().dataVersion().id()', 'getGameVersion().getSaveVersion().getId()')
+    if (!before('1.21.6')) text = text.replace('layer.setVector(', 'layer.setVertices(')
+    if (!before('1.21.6') && path.endsWith('/MiniatureBaker.java')) {
+        text = text.replace('RenderLayer.getTranslucent()', 'net.minecraft.client.render.BlockRenderLayer.TRANSLUCENT')
+    }
+    if (!before('1.21.9')) {
+        text = text.replace('holder.getPos()', 'holder.getEntityPos()')
+        if (path.endsWith('/MiniatureMeshRenderer.java') || path.endsWith('/BlockEntityPartsRenderer.java')) {
+            text = text.replace('collectVertices(Consumer<Vector3fc> consumer)', 'collectVertices(java.util.Set<org.joml.Vector3f> vertices)')
+                    .replace('getBlockEntityModelsSupplier();', 'getBlockEntityModelsSupplier().get();')
+        }
+        if (path.endsWith('/ItemModelManagerMixin.java')) {
+            text = text.replace('Lnet/minecraft/entity/LivingEntity;I)V', 'Lnet/minecraft/util/HeldItemContext;I)V')
+                    .replace('LivingEntity owner, int seed', 'net.minecraft.util.HeldItemContext owner, int seed')
+                    .replace('tryRender(state, stack, context, owner)', 'tryRender(state, stack, context, owner == null ? null : owner.getEntity())')
+        }
+    }
+    if (!before('1.21.9')) text = text.replace('context.drawBorder(', 'context.drawStrokedRectangle(')
+    if (before('1.21.4')) {
+        text = text.replace('quad.getTintIndex()', 'quad.getColorIndex()')
+                .replace('.getPositiveHorizontalDegrees()', '.asRotation()')
+                .replace('client.currentScreen.onFilesDropped(rest)', 'client.currentScreen.filesDragged(rest)')
+    }
+    if (path.endsWith('/SchematicPipelineTest.java') && before('1.21.5')) {
+        text = text.replace('.getCompoundOrEmpty(', '.getCompound(')
+                .replace('root.getCompound("Metadata").getInt("TotalBlocks", -1)', 'dev.yimeng.schematictotem.compat.CompatNbt.integer(root.getCompound("Metadata"), "TotalBlocks", -1)')
+        if (before('1.20.3')) {
+            text = text.replace('import net.minecraft.nbt.NbtSizeTracker;', '')
+                    .replace('NbtIo.readCompressed(file, NbtSizeTracker.ofUnlimitedBytes())', 'NbtIo.readCompressed(file.toFile())')
+        } else if (before('1.20.4')) text = text.replace('NbtSizeTracker', 'NbtTagSizeTracker')
+    }
+    return text
+}
