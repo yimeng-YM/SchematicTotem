@@ -95,9 +95,12 @@ if (targetMinecraft == "1.21.11") fabricApi {
 
 processResources {
     inputs.property "version", project.version
+    inputs.property "preserveJsonEscapes", true
     filesMatching("fabric.mod.json") {
-        expand "version": project.version, "minecraft": targetMinecraft, "java": targetConfig.java,
-                "loader": targetConfig.loader, "fabricApi": targetConfig.fabric_api
+        expand(["version": project.version, "minecraft": targetMinecraft, "java": targetConfig.java,
+                "loader": targetConfig.loader, "fabricApi": targetConfig.fabric_api]) {
+            escapeBackslash.set(true)
+        }
     }
 }
 
