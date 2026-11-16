@@ -1,0 +1,26 @@
+name: 错误报告 / Bug report
+description: 报告崩溃、无法加载或显示异常
+body:
+  - type: input
+    id: minecraft
+    attributes:
+      label: Minecraft 版本
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: 模组、Fabric Loader 和 Fabric API 版本
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 重现步骤、预期结果和实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志、截图与其他模组
+      description: 请删除日志中的账号、令牌和个人路径；如需提供投影，请确认有权分享。
