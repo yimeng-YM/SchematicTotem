@@ -1,0 +1,95 @@
+name: Build all Minecraft versions
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.targets.outputs.value }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: targets
+        shell: python
+        run: |
+          import json, os
+          from pathlib import Path
+          targets = list(json.loads(Path('versioning/versions.json').read_text()))
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write('value=' + json.dumps(targets) + '\n')
+
+  build:
+    needs: matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        minecraft: ${{ fromJSON(needs.matrix.outputs.targets) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: |
+            25
+            21
+          cache: gradle
+          cache-dependency-path: |
+            build.gradle
+            settings.gradle
+            gradle/wrapper/gradle-wrapper.properties
+            versioning/**
+      - name: Build and test
+        env:
+          MC_VERSION: ${{ matrix.minecraft }}
+        run: |
+          extra=()
+          if [ "$MC_VERSION" = "1.21.11" ]; then extra+=(compileGametestJava); fi
+          ./gradlew build "${extra[@]}" "-Pmc=$MC_VERSION" \
+            "-Porg.gradle.java.installations.paths=$JAVA_HOME_21_X64,$JAVA_HOME_25_X64" \
+            -Dfabric.loom.ci=true --console=plain --stacktrace
+      - name: Verify tests and production metadata
+        env:
+          MC_VERSION: ${{ matrix.minecraft }}
+        shell: python
+        run: |
+          import json, os, xml.etree.ElementTree as ET, zipfile
+          from pathlib import Path
+          mc = os.environ['MC_VERSION']
+          config = json.loads(Path('versioning/versions.json').read_text())[mc]
+          reports = list(Path(f'build/versions/{mc}/test-results/test').glob('TEST-*.xml'))
+          suites = [ET.parse(p).getroot().attrib for p in reports]
+          assert sum(int(s['tests']) for s in suites) == 3
+          assert all(int(s['skipped']) == int(s['failures']) == int(s['errors']) == 0 for s in suites)
+          jar = Path(f'build/versions/{mc}/libs/schematic-totem-1.3.0+mc{mc}.jar')
+          with zipfile.ZipFile(jar) as archive:
+              metadata = json.loads(archive.read('fabric.mod.json'))
+              assert metadata['version'] == f'1.3.0+mc{mc}'
+              assert metadata['depends']['minecraft'] == f'={mc}'
+              for name in archive.namelist():
+                  if name.endswith('.class'):
+                      assert name.startswith('dev/yimeng/schematictotem/') and '/test/' not in name
+                      assert int.from_bytes(archive.read(name)[6:8], 'big') == config['java'] + 44
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: minecraft-${{ matrix.minecraft }}
+          path: |
+            build/versions/${{ matrix.minecraft }}/libs/*.jar
+            build/versions/${{ matrix.minecraft }}/test-results/test/*.xml
+            build/versions/${{ matrix.minecraft }}/reports/tests/test/**
+          if-no-files-found: error
+          retention-days: 14
