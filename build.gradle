@@ -136,7 +136,7 @@ tasks.register("sourceRelease", Zip) {
     from(projectDir) {
         include "src/**", "libs/modmenu/*.jar", "libs/modmenu/*.LICENSE.txt", "libs/README.md",
                 "gradle/wrapper/**", "gradlew", "gradlew.bat", "build.gradle", "settings.gradle",
-                "README.md", "CHANGELOG.md", "LICENSE", "versioning/*.gradle", "versioning/versions.json", "ports/**", "docs/**", "scripts/**"
+                "README.md", "CHANGELOG.md", "LICENSE", "versioning/*.gradle", "versioning/versions.json", "ports/**", "docs/**", "scripts/**", ".github/**"
         exclude "**/__pycache__/**", "**/*.pyc"
         into root
     }
