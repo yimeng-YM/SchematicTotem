@@ -1,10 +1,13 @@
 # 投影图腾 Schematic Totem（Fabric 多版本）
 
+[下载最新发布版](https://github.com/yimeng-YM/SchematicTotem/releases/latest) · [版本与构建说明](docs/多版本说明.md) · [报告问题](https://github.com/yimeng-YM/SchematicTotem/issues)
+
 把**不死图腾**的模型换成任意投影文件的**微缩模型**：Litematica 的 `.litematic`，也支持 Sponge `.schem` 和原版结构 `.nbt`。
 纯客户端：单人和服务器都能用，服务器不用装。其他玩家看到的仍是原版图腾，除非他们也装了这个模组并加载了同一个文件。
 
 1.3.0 为 Minecraft **1.20 至 26.3 的 24 个正式版**分别构建独立 jar。请安装文件名中与你游戏版本完全一致的一个文件。
 成品位于 `dist/1.3.0/`，构建输出位于 `build/versions/<MC版本>/libs/`。
+GitHub Release 提供逐版 jar、完整发布 ZIP、可独立构建的源码 ZIP、Git 分支备份、验证记录与 SHA-256 校验和。完整发布包中的 `mods/` 同时包含 24 个版本，请只安装与你的游戏版本一致的一个 jar。
 依赖：Fabric Loader ≥ 0.19.5、该游戏版本的 Fabric API；可选 Mod Menu（提供“配置”按钮）。
 Java：1.20–1.20.4 需要 Java 17 或更新；1.20.5–1.21.11 需要 Java 21 或更新；26.x 需要 Java 25 或更新。
 
@@ -196,6 +199,7 @@ PowerShell 7 示例（Linux / macOS 将 `./gradlew.bat` 换成 `./gradlew`）：
 ```
 
 - `-Pmc` 覆盖分支默认版本；完整锁定的依赖在 `versioning/versions.json`。`mc/<版本>` 分支默认构建对应版本。
+- `main` 为当前多版本源码；`baseline/1.21.11` 和 `v1.2.1-mc1.21.11` 保留旧版基线。GitHub Actions 在 Linux 上检查完整构建矩阵；Windows 客户端截图与世界场景检查随 Release 另附。
 - 每版默认运行三项 JUnit 测试：三种格式一致性、读取体积上限、读取与模型生成管线。原创样例不是个人投影或游戏存档。
 - `-Pschematics=<目录>` 可让管线额外读取自己的投影。自备文件不进入发布包。
 - `build-matrix.ps1 -Minecraft '1.20','26.3'` 可选择版本；`-GradleArgument '<参数>'` 可传入工具链路径；脚本自动读取系统代理，可用 `-NoSystemProxy` 关闭。
